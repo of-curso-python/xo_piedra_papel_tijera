@@ -1,0 +1,8 @@
+[Activity]
+name = PiedraPapelTijeras
+activity_version = 1
+bundle_id = ofcursopython.PiedraPapelTijeras
+exec = sugar-activity activity.PiedraPapelTijeras
+icon = piedra-papel-tijeras.svg
+licence = GPLv3+
+

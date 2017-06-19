@@ -14,6 +14,8 @@ from sugar3.activity.widgets import (
     StopButton
 )
 
+from sugar3.graphics.icon import Icon
+from sugar3.graphics import style
 from ppt_utils import OPCIONES
 
 
@@ -26,7 +28,7 @@ class PiedraPapelTijeras(activity.Activity):
         self.contador_pc = 0
         self.mensaje = '<b>Victorias de {0}: {1}</b>'
         self.agregar_toolbar()
-        self.agregar_grid()
+        self.agregar_canvas()
 
     def agregar_toolbar(self):
         # crear una instancia de ToolbarBox.
@@ -53,15 +55,20 @@ class PiedraPapelTijeras(activity.Activity):
         self.set_toolbar_box(toolbar_box)
         toolbar_box.show()
 
-    def agregar_grid(self):
-        self.canvas = Gtk.Grid()
-        self.canvas.set_column_spacing(15)
-        self.canvas.set_column_homogeneous(True)
-        self.agregar_etiquetas_de_contadores()
+    def agregar_canvas(self):
+        self.canvas = Gtk.VBox()
+
+        self.agregar_contadores()
+        self.agregar_visualizador_manos()
         self.agregar_opciones()
+
         self.canvas.show_all()
 
-    def agregar_etiquetas_de_contadores(self):
+    def agregar_contadores(self):
+        self.contadores = Gtk.Grid()
+        self.contadores.set_column_spacing(15)
+        self.contadores.set_column_homogeneous(True)
+
         self.etiqueta_contador_usuario = Gtk.Label()
         self.etiqueta_contador_usuario.set_markup(
             self.mensaje.format('Usuario', self.contador_usuario)
@@ -72,8 +79,8 @@ class PiedraPapelTijeras(activity.Activity):
             self.mensaje.format('PC', self.contador_pc)
         )
 
-        self.canvas.attach(self.etiqueta_contador_usuario, 0, 0, 1, 1)
-        self.canvas.attach_next_to(
+        self.contadores.attach(self.etiqueta_contador_usuario, 0, 0, 1, 1)
+        self.contadores.attach_next_to(
             self.etiqueta_contador_pc,
             self.etiqueta_contador_usuario,
             Gtk.PositionType.RIGHT,
@@ -81,7 +88,33 @@ class PiedraPapelTijeras(activity.Activity):
             1
         )
 
+        self.canvas.pack_start(self.contadores, False, False, 0)
+
+    def agregar_visualizador_manos(self):
+        self.visualizador_manos = Gtk.HBox()
+        # TODO: Reemplazar estas imagenes
+        usr_img = Icon(
+            icon_name='computer-xo',
+            pixel_size=style.STANDARD_ICON_SIZE)
+
+        label_img = Icon(
+            icon_name='computer-xo',
+            pixel_size=style.STANDARD_ICON_SIZE)
+
+        pc_img = Icon(
+            icon_name='computer-xo',
+            pixel_size=style.STANDARD_ICON_SIZE)
+
+        self.visualizador_manos.pack_start(usr_img, True, False, 0)
+        self.visualizador_manos.pack_start(label_img, True, False, 0)
+        self.visualizador_manos.pack_start(pc_img, True, False, 0)
+
+        self.canvas.pack_start(self.visualizador_manos, True, True, 0)
+
     def agregar_opciones(self):
+        self.opciones = Gtk.Grid()
+        self.opciones.set_column_homogeneous(True)
+        self.opciones.set_column_spacing(15)
         boton_piedra = Gtk.Button(label='Piedra')
         boton_piedra.connect('clicked', self.seleccion, 'piedra')
         boton_papel = Gtk.Button(label='Papel')
@@ -89,7 +122,7 @@ class PiedraPapelTijeras(activity.Activity):
         boton_tijeras = Gtk.Button(label='Tijeras')
         boton_tijeras.connect('clicked', self.seleccion, 'tijeras')
 
-        self.canvas.attach(
+        self.opciones.attach(
             boton_piedra,  # el widget a agregar.
             # El Nro de celda de izquierda a derecha a la que se agregara el
             # elemento. Posicion horizontal.
@@ -101,8 +134,10 @@ class PiedraPapelTijeras(activity.Activity):
             1   # Nro de columnas que ocupara verticalmente el elemento.
         )
 
-        self.canvas.attach_next_to(boton_papel, boton_piedra, Gtk.PositionType.RIGHT, 1, 1)
-        self.canvas.attach_next_to(boton_tijeras, boton_papel, Gtk.PositionType.RIGHT, 1, 1)
+        self.opciones.attach_next_to(boton_papel, boton_piedra, Gtk.PositionType.RIGHT, 1, 1)
+        self.opciones.attach_next_to(boton_tijeras, boton_papel, Gtk.PositionType.RIGHT, 1, 1)
+
+        self.canvas.pack_start(self.opciones, False, False, 0)
 
     def seleccion(self, boton, seleccion):
         seleccion_pc = random.choice(OPCIONES.keys())

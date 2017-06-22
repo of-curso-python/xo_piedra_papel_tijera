@@ -1,14 +1,23 @@
 OPCIONES = {
     'piedra': {
-        'tijeras': True,
-        'papel': False
+        'imagen': 'piedra.jpg',
+        'resultados': {
+            'tijeras': True,
+            'papel': False
+        }
     },
     'papel': {
-        'piedra': True,
-        'tijeras': False
+        'imagen': 'papel.jpg',
+        'resultados': {
+            'piedra': True,
+            'tijeras': False
+        }
     },
     'tijeras': {
-        'papel': True,
-        'piedra': False
+        'imagen': 'tijera.jpg',
+        'resultados': {
+            'papel': True,
+            'piedra': False
+        }
     }
 }

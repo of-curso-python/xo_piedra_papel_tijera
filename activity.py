@@ -14,7 +14,6 @@ from sugar3.activity.widgets import (
     StopButton
 )
 
-from sugar3.graphics.icon import Icon
 from sugar3.graphics import style
 from ppt_utils import OPCIONES
 
@@ -93,21 +92,14 @@ class PiedraPapelTijeras(activity.Activity):
     def agregar_visualizador_manos(self):
         self.visualizador_manos = Gtk.HBox()
         # TODO: Reemplazar estas imagenes
-        usr_img = Icon(
-            icon_name='computer-xo',
-            pixel_size=style.STANDARD_ICON_SIZE)
+        self.usr_img = Gtk.Image()
+        label_img = Gtk.Label()
+        label_img.set_markup('<b> Vs </b>')
+        self.pc_img = Gtk.Image()
 
-        label_img = Icon(
-            icon_name='computer-xo',
-            pixel_size=style.STANDARD_ICON_SIZE)
-
-        pc_img = Icon(
-            icon_name='computer-xo',
-            pixel_size=style.STANDARD_ICON_SIZE)
-
-        self.visualizador_manos.pack_start(usr_img, True, False, 0)
+        self.visualizador_manos.pack_start(self.usr_img, True, False, 0)
         self.visualizador_manos.pack_start(label_img, True, False, 0)
-        self.visualizador_manos.pack_start(pc_img, True, False, 0)
+        self.visualizador_manos.pack_start(self.pc_img, True, False, 0)
 
         self.canvas.pack_start(self.visualizador_manos, True, True, 0)
 
@@ -145,12 +137,13 @@ class PiedraPapelTijeras(activity.Activity):
         if seleccion == seleccion_pc:
             pass
 
-        elif OPCIONES[seleccion][seleccion_pc]:
+        elif OPCIONES[seleccion]['resultados'][seleccion_pc]:
             self.contador_usuario += 1
         else:
             self.contador_pc += 1
 
         self.actualizar_contadores()
+        self.actualizar_visualizador_manos(seleccion, seleccion_pc)
 
     def actualizar_contadores(self):
         self.etiqueta_contador_usuario.set_markup(
@@ -159,3 +152,9 @@ class PiedraPapelTijeras(activity.Activity):
         self.etiqueta_contador_pc.set_markup(
             self.mensaje.format('PC', self.contador_pc)
         )
+
+    def actualizar_visualizador_manos(self, seleccion, seleccion_pc):
+        img_usr = OPCIONES[seleccion]['imagen']
+        img_pc = OPCIONES[seleccion_pc]['imagen']
+        self.usr_img.set_from_file(img_usr)
+        self.pc_img.set_from_file(img_pc)

@@ -1,7 +1,7 @@
 import random
 import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+import logging
+
 
 # importar modulo que contiene clase base de actividad.
 from sugar3.activity import activity
@@ -14,8 +14,12 @@ from sugar3.activity.widgets import (
     StopButton
 )
 
-from sugar3.graphics import style
 from ppt_utils import OPCIONES
+
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Gdk, GdkPixbuf
+
+logger = logging.getLogger(__name__)
 
 
 class PiedraPapelTijeras(activity.Activity):
@@ -28,8 +32,10 @@ class PiedraPapelTijeras(activity.Activity):
         self.mensaje = '<b>Victorias de {0}: {1}</b>'
         self.agregar_toolbar()
         self.agregar_canvas()
+        self.agregar_estilo()
 
     def agregar_toolbar(self):
+
         # crear una instancia de ToolbarBox.
         # en este momento es un menu vacio
         toolbar_box = ToolbarBox()
@@ -55,7 +61,9 @@ class PiedraPapelTijeras(activity.Activity):
         toolbar_box.show()
 
     def agregar_canvas(self):
-        self.canvas = Gtk.VBox()
+        self.canvas = Gtk.ScrolledWindow()
+        self.inner_canvas = Gtk.VBox()
+        self.canvas.add(self.inner_canvas)
 
         self.agregar_contadores()
         self.agregar_visualizador_manos()
@@ -87,12 +95,14 @@ class PiedraPapelTijeras(activity.Activity):
             1
         )
 
-        self.canvas.pack_start(self.contadores, False, False, 0)
+        self.inner_canvas.pack_start(self.contadores, False, False, 0)
 
     def agregar_visualizador_manos(self):
         self.visualizador_manos = Gtk.HBox()
-        # TODO: Reemplazar estas imagenes
+        self.visualizador_manos.set_name('visualizador')
+
         self.usr_img = Gtk.Image()
+        self.usr_img.set_name('v-image')
         label_img = Gtk.Label()
         label_img.set_markup('<b> Vs </b>')
         self.pc_img = Gtk.Image()
@@ -101,7 +111,7 @@ class PiedraPapelTijeras(activity.Activity):
         self.visualizador_manos.pack_start(label_img, True, False, 0)
         self.visualizador_manos.pack_start(self.pc_img, True, False, 0)
 
-        self.canvas.pack_start(self.visualizador_manos, True, True, 0)
+        self.inner_canvas.pack_start(self.visualizador_manos, True, True, 0)
 
     def agregar_opciones(self):
         self.opciones = Gtk.Grid()
@@ -119,17 +129,20 @@ class PiedraPapelTijeras(activity.Activity):
             # El Nro de celda de izquierda a derecha a la que se agregara el
             # elemento. Posicion horizontal.
             0,
-            # El Nro de celda de arriba hacia abajo a la que se agregara el elemento.
-            # posicion vertical
+            # El Nro de celda de arriba hacia abajo a la que
+            # se agregara el elemento. Posicion vertical
             3,
             1,  # Nro de columnas que ocupara horizontalmente el elemento.
             1   # Nro de columnas que ocupara verticalmente el elemento.
         )
 
-        self.opciones.attach_next_to(boton_papel, boton_piedra, Gtk.PositionType.RIGHT, 1, 1)
-        self.opciones.attach_next_to(boton_tijeras, boton_papel, Gtk.PositionType.RIGHT, 1, 1)
+        self.opciones.attach_next_to(
+                boton_papel, boton_piedra, Gtk.PositionType.RIGHT, 1, 1)
 
-        self.canvas.pack_start(self.opciones, False, False, 0)
+        self.opciones.attach_next_to(
+                boton_tijeras, boton_papel, Gtk.PositionType.RIGHT, 1, 1)
+
+        self.inner_canvas.pack_start(self.opciones, False, False, 0)
 
     def seleccion(self, boton, seleccion):
         seleccion_pc = random.choice(OPCIONES.keys())
@@ -156,5 +169,33 @@ class PiedraPapelTijeras(activity.Activity):
     def actualizar_visualizador_manos(self, seleccion, seleccion_pc):
         img_usr = OPCIONES[seleccion]['imagen']
         img_pc = OPCIONES[seleccion_pc]['imagen']
-        self.usr_img.set_from_file(img_usr)
-        self.pc_img.set_from_file(img_pc)
+
+        # Cargar la imagen
+        temp_img_usr = Gtk.Image.new_from_file(img_usr)
+        # Obtener pixbuf:
+        # Contiene info sobre datos de pixeles de la imagen,
+        # su espacio de color, ancho y alto
+        buf_usr = temp_img_usr.get_pixbuf()
+        # Redimensionar y agregar al Widget
+        self.usr_img.set_from_pixbuf(
+            buf_usr.scale_simple(200, 200, GdkPixbuf.InterpType.BILINEAR))
+
+        temp_img_pc = Gtk.Image.new_from_file(img_pc)
+        buf_pc = temp_img_pc.get_pixbuf()
+
+        self.pc_img.set_from_pixbuf(
+            buf_pc.scale_simple(200, 200, GdkPixbuf.InterpType.BILINEAR))
+
+        self.agregar_estilo()
+
+    def agregar_estilo(self):
+        return
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_path('estilo.css')
+
+        # TODO: Investigar GDK.Screen
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(),
+            css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
